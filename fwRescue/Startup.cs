@@ -38,7 +38,7 @@ namespace fwRescue
 			services.AddRazorPages();
 			services.AddServerSideBlazor();
 			services.AddHttpContextAccessor();
-			//services.AddSingleton<WeatherForecastService>();
+			services.AddSingleton<SaveLogsService>();
 			services.AddSingleton<CircuitHandler, TrackingCircuitHandler>();
 		}
 

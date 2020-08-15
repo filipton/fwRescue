@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
+using fwRescue.Data;
 using fwRescue.Pages;
 using Microsoft.AspNetCore.Components;
 
@@ -35,10 +36,10 @@ namespace fwRescue
 
         public async Task RunBotAsync()
         {
-            WriteLine("STARTING BOT!");
+            WriteLine("Starting bot!");
 
             string fileTokenPath = Path.Combine(System.Reflection.Assembly.GetExecutingAssembly().Location.Replace("fwRescue.dll", ""), "token.cfg");
-            WriteLine(fileTokenPath);
+            WriteLine("Token file path: " + fileTokenPath);
             if(!File.Exists(fileTokenPath))
 			{
                 File.Create(fileTokenPath);
@@ -63,6 +64,8 @@ namespace fwRescue
 
                 await Client.ConnectAsync();
 
+                WriteLine("Bot started!");
+
                 await Task.Delay(-1);
             }
         }
@@ -84,7 +87,12 @@ namespace fwRescue
         {
             WriteLine("Client is ready to process events.");
             UserOnline = true;
-            Pages.Index.RefreshPage();
+
+            foreach (fwRescue.Pages.Index c in fwRescue.Pages.Index.indexes)
+            {
+                c.Refresh();
+            }
+
             return Task.CompletedTask;
         }
 
@@ -97,7 +105,7 @@ namespace fwRescue
 
         public static void WriteLine(string content)
 		{
-            File.AppendAllText(@"C:\Users\filip\Desktop\logs.txt", $"[{DateTime.Now.ToString()}] {content}" + Environment.NewLine);
+            SaveLogsService.AddToLogs(content);
 		}
     }
 

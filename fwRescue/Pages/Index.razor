@@ -81,14 +81,6 @@
         }
     }
 
-    public static void RefreshPage()
-    {
-        foreach(Index c in indexes)
-        {
-            c.Refresh();
-        }
-    }
-
     protected override void OnInitialized()
     {
         indexes.Add(this);

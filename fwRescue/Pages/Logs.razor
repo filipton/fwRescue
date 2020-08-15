@@ -1,0 +1,28 @@
+﻿@page "/logs"
+@implements IDisposable
+
+<h3>Logs</h3>
+
+@foreach (string s in fwRescue.Data.SaveLogsService.Logs)
+{
+    <p>@s</p>
+}
+
+@code {
+    public static List<Logs> indexes = new List<Logs>();
+
+    public void Refresh()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    protected override void OnInitialized()
+    {
+        indexes.Add(this);
+    }
+
+    public void Dispose()
+    {
+        indexes.Remove(this);
+    }
+}
