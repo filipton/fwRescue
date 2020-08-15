@@ -51,6 +51,9 @@
     public static List<Index> indexes = new List<Index>();
     private MessageSendModel msmodel = new MessageSendModel();
 
+    public bool IsInitlizing;
+    public bool IsDisposing;
+
     private void HandleValidSubmit()
     {
         foreach (var dmchat in DiscordUser.Client.PrivateChannels)
@@ -84,10 +87,50 @@
     protected override void OnInitialized()
     {
         indexes.Add(this);
+
+        if (IsDisposing)
+        {
+            IsDisposing = false;
+        }
+        else
+        {
+            IsInitlizing = true;
+
+            new System.Threading.Thread(() =>
+            {
+                System.Threading.Thread.Sleep(1000);
+                if (IsInitlizing)
+                {
+                    //code
+                    fwRescue.Data.SaveLogsService.AddToLogs("INITLIZED");
+                    IsInitlizing = false;
+                }
+            }).Start();
+        }
     }
 
     public void Dispose()
     {
         indexes.Remove(this);
+
+        if (IsInitlizing)
+        {
+            IsInitlizing = false;
+        }
+        else
+        {
+            IsDisposing = true;
+
+            new System.Threading.Thread(() =>
+            {
+                System.Threading.Thread.Sleep(1000);
+                if (IsDisposing)
+                {
+                    //code
+                    fwRescue.Data.SaveLogsService.AddToLogs("DISPOSED");
+                    IsDisposing = false;
+                }
+            }).Start();
+        }
     }
 }

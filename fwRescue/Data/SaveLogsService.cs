@@ -11,7 +11,7 @@ namespace fwRescue.Data
 
 		public static void AddToLogs(string content)
 		{
-			Logs.Add($"[{DateTime.Now.ToString()}] {content}");
+			Logs.Insert(0, $"[{DateTime.Now.ToString()}] {content}");
 			
 			foreach(var c in fwRescue.Pages.Logs.indexes)
 			{
