@@ -1,0 +1,101 @@
+﻿@page "/"
+
+@implements IDisposable
+
+<h1>fwRescue ALPHA</h1>
+
+<button class="btn btn-primary" @onclick="Refresh">REFRESH</button>
+
+@if (DiscordUser.UserOnline)
+{
+    //WriteCookieAsync("test1", ReadCookieAsync("test2").Result, 6);
+
+    @if (DiscordUser.RescueDmChats.Count < 1)
+    {
+        foreach (var dmchat in DiscordUser.Client.PrivateChannels)
+        {
+            new System.Threading.Thread(() =>
+            {
+                DiscordUser.RescueDmChats.Add(new fwRescue.RescueDmChats(dmchat.Recipients.FirstOrDefault().Username, dmchat.GetMessagesAsync(20).Result.Reverse().ToList()));
+                InvokeAsync(StateHasChanged);
+            }).Start();
+        }
+    }
+    else
+    {
+        DiscordUser.ActiveChatId = DiscordUser.RescueDmChats.FirstOrDefault().messages.First().ChannelId;
+        @foreach (var msg in DiscordUser.RescueDmChats.FirstOrDefault().messages)
+        {
+            if (msg.Attachments.Count > 0)
+            {
+                <div><a>@msg.Author.Username: </a><a href="@msg.Attachments.FirstOrDefault().Url">@msg.Attachments.FirstOrDefault().FileName</a></div>
+            }
+            else
+            {
+                <div><a>@msg.Author.Username: @msg.Content</a></div>
+            }
+        }
+    }
+
+    <EditForm Model="@msmodel" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <InputText id="name" @bind-Value="msmodel.Message" />
+
+        <button type="submit">Submit</button>
+    </EditForm>
+}
+
+@code {
+    public static List<Index> indexes = new List<Index>();
+    private MessageSendModel msmodel = new MessageSendModel();
+
+    private void HandleValidSubmit()
+    {
+        foreach (var dmchat in DiscordUser.Client.PrivateChannels)
+        {
+            if (dmchat.Id == DiscordUser.ActiveChatId)
+            {
+                dmchat.SendMessageAsync(msmodel.Message);
+            }
+        }
+
+        msmodel.Message = string.Empty;
+    }
+
+    public void Refresh()
+    {
+        foreach (var dmchat in DiscordUser.Client.PrivateChannels)
+        {
+            new System.Threading.Thread(() =>
+            {
+                int ind = DiscordUser.RescueDmChats.FindIndex(x => x.name == dmchat.Recipients.FirstOrDefault().Username);
+                if (ind > -1)
+                {
+                    DiscordUser.RescueDmChats[ind] = new fwRescue.RescueDmChats(dmchat.Recipients.FirstOrDefault().Username, dmchat.GetMessagesAsync(20).Result.Reverse().ToList());
+                }
+
+                InvokeAsync(StateHasChanged);
+            }).Start();
+        }
+    }
+
+    public static void RefreshPage()
+    {
+        foreach(Index c in indexes)
+        {
+            c.Refresh();
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        indexes.Add(this);
+    }
+
+    public void Dispose()
+    {
+        indexes.Remove(this);
+    }
+}
